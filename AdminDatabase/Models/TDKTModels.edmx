@@ -4,7 +4,72 @@
   <edmx:Runtime>
     <!-- SSDL content -->
     <edmx:StorageModels>
-    <Schema Namespace="TDKTModel.Store" Provider="System.Data.SqlClient" ProviderManifestToken="2012" Alias="Self" xmlns:customannotation="http://schemas.microsoft.com/ado/2013/11/edm/customannotation" xmlns="http://schemas.microsoft.com/ado/2009/11/edm/ssdl">
+    <Schema Namespace="TDKTModel.Store" Provider="System.Data.SqlClient" ProviderManifestToken="2012" Alias="Self" xmlns:store="http://schemas.microsoft.com/ado/2007/12/edm/EntityStoreSchemaGenerator" xmlns:customannotation="http://schemas.microsoft.com/ado/2013/11/edm/customannotation" xmlns="http://schemas.microsoft.com/ado/2009/11/edm/ssdl">
+        <EntityType Name="tblAction">
+          <Key>
+            <PropertyRef Name="Id" />
+          </Key>
+          <Property Name="Id" Type="int" Nullable="false" />
+          <Property Name="Action" Type="nvarchar" MaxLength="50" Nullable="false" />
+          <Property Name="Controller" Type="nvarchar" MaxLength="50" Nullable="false" />
+          <Property Name="AppId" Type="int" Nullable="false" />
+          <Property Name="Note" Type="nvarchar(max)" />
+        </EntityType>
+        <EntityType Name="tblApp">
+          <Key>
+            <PropertyRef Name="Id" />
+          </Key>
+          <Property Name="Id" Type="int" Nullable="false" />
+          <Property Name="AppName" Type="nvarchar" MaxLength="50" Nullable="false" />
+          <Property Name="AppUrl" Type="nvarchar" MaxLength="50" Nullable="false" />
+          <Property Name="Note" Type="nvarchar(max)" />
+        </EntityType>
+        <EntityType Name="tblRoleAction">
+          <Key>
+            <PropertyRef Name="Id" />
+          </Key>
+          <Property Name="Id" Type="int" Nullable="false" />
+          <Property Name="AppId" Type="int" Nullable="false" />
+          <Property Name="RoleId" Type="nvarchar" MaxLength="128" Nullable="false" />
+          <Property Name="ActionId" Type="int" Nullable="false" />
+          <Property Name="Note" Type="nvarchar(max)" />
+        </EntityType>
+        <Association Name="FK_tblAction_tblApp">
+          <End Role="tblApp" Type="Self.tblApp" Multiplicity="1" />
+          <End Role="tblAction" Type="Self.tblAction" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="tblApp">
+              <PropertyRef Name="Id" />
+            </Principal>
+            <Dependent Role="tblAction">
+              <PropertyRef Name="AppId" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="FK_tblRoleAction_tblAction">
+          <End Role="tblAction" Type="Self.tblAction" Multiplicity="1" />
+          <End Role="tblRoleAction" Type="Self.tblRoleAction" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="tblAction">
+              <PropertyRef Name="Id" />
+            </Principal>
+            <Dependent Role="tblRoleAction">
+              <PropertyRef Name="ActionId" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="FK_tblRoleAction_tblApp">
+          <End Role="tblApp" Type="Self.tblApp" Multiplicity="1" />
+          <End Role="tblRoleAction" Type="Self.tblRoleAction" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="tblApp">
+              <PropertyRef Name="Id" />
+            </Principal>
+            <Dependent Role="tblRoleAction">
+              <PropertyRef Name="AppId" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
         <Function Name="sp_getAllowedRoles" Aggregate="false" BuiltIn="false" NiladicFunction="false" IsComposable="false" ParameterTypeSemantics="AllowImplicitConversion" Schema="dbo">
           <Parameter Name="Action" Type="nvarchar" Mode="In" />
           <Parameter Name="Controller" Type="nvarchar" Mode="In" />
@@ -13,29 +78,177 @@
         <Function Name="sp_getRolesforUser" Aggregate="false" BuiltIn="false" NiladicFunction="false" IsComposable="false" ParameterTypeSemantics="AllowImplicitConversion" Schema="dbo">
           <Parameter Name="UserId" Type="nvarchar" Mode="In" />
         </Function>
-        <EntityContainer Name="TDKTModelStoreContainer" />
+        <Function Name="sp_listApps" Aggregate="false" BuiltIn="false" NiladicFunction="false" IsComposable="false" ParameterTypeSemantics="AllowImplicitConversion" Schema="dbo" />
+        <EntityContainer Name="TDKTModelStoreContainer">
+          <EntitySet Name="tblAction" EntityType="Self.tblAction" Schema="dbo" store:Type="Tables" />
+          <EntitySet Name="tblApp" EntityType="Self.tblApp" Schema="dbo" store:Type="Tables" />
+          <EntitySet Name="tblRoleAction" EntityType="Self.tblRoleAction" Schema="dbo" store:Type="Tables" />
+          <AssociationSet Name="FK_tblAction_tblApp" Association="Self.FK_tblAction_tblApp">
+            <End Role="tblApp" EntitySet="tblApp" />
+            <End Role="tblAction" EntitySet="tblAction" />
+          </AssociationSet>
+          <AssociationSet Name="FK_tblRoleAction_tblAction" Association="Self.FK_tblRoleAction_tblAction">
+            <End Role="tblAction" EntitySet="tblAction" />
+            <End Role="tblRoleAction" EntitySet="tblRoleAction" />
+          </AssociationSet>
+          <AssociationSet Name="FK_tblRoleAction_tblApp" Association="Self.FK_tblRoleAction_tblApp">
+            <End Role="tblApp" EntitySet="tblApp" />
+            <End Role="tblRoleAction" EntitySet="tblRoleAction" />
+          </AssociationSet>
+        </EntityContainer>
       </Schema></edmx:StorageModels>
     <!-- CSDL content -->
     <edmx:ConceptualModels>
       <Schema Namespace="TDKTModel" Alias="Self" annotation:UseStrongSpatialTypes="false" xmlns:annotation="http://schemas.microsoft.com/ado/2009/02/edm/annotation" xmlns:customannotation="http://schemas.microsoft.com/ado/2013/11/edm/customannotation" xmlns="http://schemas.microsoft.com/ado/2009/11/edm">
         <EntityContainer Name="TDKTEntities" annotation:LazyLoadingEnabled="true" >
+          <FunctionImport Name="sp_getRolesforUser" ReturnType="Collection(String)">
+          <Parameter Name="UserId" Mode="In" Type="String" />
+          </FunctionImport>
+          <EntitySet Name="tblApps" EntityType="TDKTModel.tblApp" />
+          <EntitySet Name="tblRoleActions" EntityType="TDKTModel.tblRoleAction" />
+          <AssociationSet Name="FK_tblRoleAction_tblApp" Association="TDKTModel.FK_tblRoleAction_tblApp">
+            <End Role="tblApp" EntitySet="tblApps" />
+            <End Role="tblRoleAction" EntitySet="tblRoleActions" />
+          </AssociationSet>
           <FunctionImport Name="sp_getAllowedRoles" ReturnType="Collection(String)">
             <Parameter Name="Action" Mode="In" Type="String" />
             <Parameter Name="Controller" Mode="In" Type="String" />
             <Parameter Name="AppId" Mode="In" Type="Int32" />
           </FunctionImport>
-          <FunctionImport Name="sp_getRolesforUser" ReturnType="Collection(String)">
-            <Parameter Name="UserId" Mode="In" Type="String" />
-          </FunctionImport>
+          <FunctionImport Name="sp_listApps" ReturnType="Collection(TDKTModel.sp_listApps_Result)" />
+          <EntitySet Name="tblActions" EntityType="TDKTModel.tblAction" />
+          <AssociationSet Name="FK_tblAction_tblApp" Association="TDKTModel.FK_tblAction_tblApp">
+            <End Role="tblApp" EntitySet="tblApps" />
+            <End Role="tblAction" EntitySet="tblActions" />
+          </AssociationSet>
+          <AssociationSet Name="FK_tblRoleAction_tblAction" Association="TDKTModel.FK_tblRoleAction_tblAction">
+            <End Role="tblAction" EntitySet="tblActions" />
+            <End Role="tblRoleAction" EntitySet="tblRoleActions" />
+          </AssociationSet>
         </EntityContainer>
+        <EntityType Name="tblApp">
+          <Key>
+            <PropertyRef Name="Id" />
+          </Key>
+          <Property Name="Id" Type="Int32" Nullable="false" />
+          <Property Name="AppName" Type="String" Nullable="false" MaxLength="50" FixedLength="false" Unicode="true" />
+          <Property Name="AppUrl" Type="String" Nullable="false" MaxLength="50" FixedLength="false" Unicode="true" />
+          <Property Name="Note" Type="String" MaxLength="Max" FixedLength="false" Unicode="true" />
+          <NavigationProperty Name="tblRoleActions" Relationship="TDKTModel.FK_tblRoleAction_tblApp" FromRole="tblApp" ToRole="tblRoleAction" />
+          <NavigationProperty Name="tblActions" Relationship="TDKTModel.FK_tblAction_tblApp" FromRole="tblApp" ToRole="tblAction" />
+        </EntityType>
+        <EntityType Name="tblRoleAction">
+          <Key>
+            <PropertyRef Name="Id" />
+          </Key>
+          <Property Name="Id" Type="Int32" Nullable="false" />
+          <Property Name="AppId" Type="Int32" Nullable="false" />
+          <Property Name="RoleId" Type="String" Nullable="false" MaxLength="128" FixedLength="false" Unicode="true" />
+          <Property Name="ActionId" Type="Int32" Nullable="false" />
+          <Property Name="Note" Type="String" MaxLength="Max" FixedLength="false" Unicode="true" />
+          <NavigationProperty Name="tblApp" Relationship="TDKTModel.FK_tblRoleAction_tblApp" FromRole="tblRoleAction" ToRole="tblApp" />
+          <NavigationProperty Name="tblAction" Relationship="TDKTModel.FK_tblRoleAction_tblAction" FromRole="tblRoleAction" ToRole="tblAction" />
+        </EntityType>
+        <Association Name="FK_tblRoleAction_tblApp">
+          <End Type="TDKTModel.tblApp" Role="tblApp" Multiplicity="1" />
+          <End Type="TDKTModel.tblRoleAction" Role="tblRoleAction" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="tblApp">
+              <PropertyRef Name="Id" />
+            </Principal>
+            <Dependent Role="tblRoleAction">
+              <PropertyRef Name="AppId" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <ComplexType Name="sp_listApps_Result">
+          <Property Type="Int32" Name="Id" Nullable="false" />
+          <Property Type="String" Name="AppName" Nullable="false" MaxLength="50" />
+        </ComplexType>
+        <EntityType Name="tblAction">
+          <Key>
+            <PropertyRef Name="Id" />
+          </Key>
+          <Property Name="Id" Type="Int32" Nullable="false" />
+          <Property Name="Action" Type="String" Nullable="false" MaxLength="50" FixedLength="false" Unicode="true" />
+          <Property Name="Controller" Type="String" Nullable="false" MaxLength="50" FixedLength="false" Unicode="true" />
+          <Property Name="AppId" Type="Int32" Nullable="false" />
+          <Property Name="Note" Type="String" MaxLength="Max" FixedLength="false" Unicode="true" />
+          <NavigationProperty Name="tblApp" Relationship="TDKTModel.FK_tblAction_tblApp" FromRole="tblAction" ToRole="tblApp" />
+          <NavigationProperty Name="tblRoleActions" Relationship="TDKTModel.FK_tblRoleAction_tblAction" FromRole="tblAction" ToRole="tblRoleAction" />
+        </EntityType>
+        <Association Name="FK_tblAction_tblApp">
+          <End Type="TDKTModel.tblApp" Role="tblApp" Multiplicity="1" />
+          <End Type="TDKTModel.tblAction" Role="tblAction" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="tblApp">
+              <PropertyRef Name="Id" />
+            </Principal>
+            <Dependent Role="tblAction">
+              <PropertyRef Name="AppId" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="FK_tblRoleAction_tblAction">
+          <End Type="TDKTModel.tblAction" Role="tblAction" Multiplicity="1" />
+          <End Type="TDKTModel.tblRoleAction" Role="tblRoleAction" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="tblAction">
+              <PropertyRef Name="Id" />
+            </Principal>
+            <Dependent Role="tblRoleAction">
+              <PropertyRef Name="ActionId" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
       </Schema>
     </edmx:ConceptualModels>
     <!-- C-S mapping content -->
     <edmx:Mappings>
       <Mapping Space="C-S" xmlns="http://schemas.microsoft.com/ado/2009/11/mapping/cs">
         <EntityContainerMapping StorageEntityContainer="TDKTModelStoreContainer" CdmEntityContainer="TDKTEntities" >
-          <FunctionImportMapping FunctionImportName="sp_getAllowedRoles" FunctionName="TDKTModel.Store.sp_getAllowedRoles" />
           <FunctionImportMapping FunctionImportName="sp_getRolesforUser" FunctionName="TDKTModel.Store.sp_getRolesforUser" />
+          <EntitySetMapping Name="tblApps">
+            <EntityTypeMapping TypeName="TDKTModel.tblApp">
+              <MappingFragment StoreEntitySet="tblApp">
+                <ScalarProperty Name="Note" ColumnName="Note" />
+                <ScalarProperty Name="AppUrl" ColumnName="AppUrl" />
+                <ScalarProperty Name="AppName" ColumnName="AppName" />
+                <ScalarProperty Name="Id" ColumnName="Id" />
+              </MappingFragment>
+            </EntityTypeMapping>
+          </EntitySetMapping>
+          <EntitySetMapping Name="tblRoleActions">
+            <EntityTypeMapping TypeName="TDKTModel.tblRoleAction">
+              <MappingFragment StoreEntitySet="tblRoleAction">
+                <ScalarProperty Name="Note" ColumnName="Note" />
+                <ScalarProperty Name="ActionId" ColumnName="ActionId" />
+                <ScalarProperty Name="RoleId" ColumnName="RoleId" />
+                <ScalarProperty Name="AppId" ColumnName="AppId" />
+                <ScalarProperty Name="Id" ColumnName="Id" />
+              </MappingFragment>
+            </EntityTypeMapping>
+          </EntitySetMapping>
+          <FunctionImportMapping FunctionImportName="sp_getAllowedRoles" FunctionName="TDKTModel.Store.sp_getAllowedRoles" />
+          <FunctionImportMapping FunctionImportName="sp_listApps" FunctionName="TDKTModel.Store.sp_listApps">
+            <ResultMapping>
+              <ComplexTypeMapping TypeName="TDKTModel.sp_listApps_Result">
+                <ScalarProperty Name="Id" ColumnName="Id" />
+                <ScalarProperty Name="AppName" ColumnName="AppName" />
+              </ComplexTypeMapping>
+            </ResultMapping>
+          </FunctionImportMapping>
+          <EntitySetMapping Name="tblActions">
+            <EntityTypeMapping TypeName="TDKTModel.tblAction">
+              <MappingFragment StoreEntitySet="tblAction">
+                <ScalarProperty Name="Note" ColumnName="Note" />
+                <ScalarProperty Name="AppId" ColumnName="AppId" />
+                <ScalarProperty Name="Controller" ColumnName="Controller" />
+                <ScalarProperty Name="Action" ColumnName="Action" />
+                <ScalarProperty Name="Id" ColumnName="Id" />
+              </MappingFragment>
+            </EntityTypeMapping>
+          </EntitySetMapping>
         </EntityContainerMapping>
       </Mapping>
     </edmx:Mappings>

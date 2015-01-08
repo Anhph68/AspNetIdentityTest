@@ -27,6 +27,18 @@ namespace AdminDatabase.Models
             throw new UnintentionalCodeFirstException();
         }
     
+        public virtual DbSet<tblApp> tblApps { get; set; }
+        public virtual DbSet<tblRoleAction> tblRoleActions { get; set; }
+        public virtual DbSet<tblAction> tblActions { get; set; }
+    
+        public virtual ObjectResult<string> sp_getRolesforUser(string userId)
+        {
+            var userIdParameter = userId != null ?
+                new ObjectParameter("UserId", userId) :
+                new ObjectParameter("UserId", typeof(string));
+    
+            return ((IObjectContextAdapter)this).ObjectContext.ExecuteFunction<string>("sp_getRolesforUser", userIdParameter);
+        }
     
         public virtual ObjectResult<string> sp_getAllowedRoles(string action, string controller, Nullable<int> appId)
         {
@@ -45,13 +57,9 @@ namespace AdminDatabase.Models
             return ((IObjectContextAdapter)this).ObjectContext.ExecuteFunction<string>("sp_getAllowedRoles", actionParameter, controllerParameter, appIdParameter);
         }
     
-        public virtual ObjectResult<string> sp_getRolesforUser(string userId)
+        public virtual ObjectResult<sp_listApps_Result> sp_listApps()
         {
-            var userIdParameter = userId != null ?
-                new ObjectParameter("UserId", userId) :
-                new ObjectParameter("UserId", typeof(string));
-    
-            return ((IObjectContextAdapter)this).ObjectContext.ExecuteFunction<string>("sp_getRolesforUser", userIdParameter);
+            return ((IObjectContextAdapter)this).ObjectContext.ExecuteFunction<sp_listApps_Result>("sp_listApps");
         }
     }
 }

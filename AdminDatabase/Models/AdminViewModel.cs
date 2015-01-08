@@ -11,6 +11,8 @@ namespace AdminDatabase.Models
         [Display(Name = "RoleName")]
         public string Name { get; set; }
 
+        [Required]
+        [Display(Name = "Application")]
         public string AppId { get; set; }
     }
 
@@ -23,6 +25,8 @@ namespace AdminDatabase.Models
         [EmailAddress]
         public string Email { get; set; }
 
+        [Required]
+        [Display(Name = "Roles")]
         public IEnumerable<SelectListItem> RolesList { get; set; }
     }
 }

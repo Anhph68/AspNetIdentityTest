@@ -14,6 +14,8 @@ namespace AdminDatabase.Controllers
     [Authorize(Roles = "Admin")]
     public class RolesAdminController : Controller
     {
+        private TDKTEntities db = new TDKTEntities();
+
         public RolesAdminController()
         {
         }
@@ -123,6 +125,9 @@ namespace AdminDatabase.Controllers
             {
                 return HttpNotFound();
             }
+
+            ViewBag.Apps = new SelectList(db.sp_listApps(), "Id", "AppName");
+
             RoleViewModel roleModel = new RoleViewModel { Id = role.Id, Name = role.Name, AppId = role.AppId.ToString() };
             return View(roleModel);
         }

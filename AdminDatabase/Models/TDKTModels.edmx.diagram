@@ -4,7 +4,14 @@
   <edmx:Designer xmlns="http://schemas.microsoft.com/ado/2009/11/edmx">
     <!-- Diagram content (shape and connector positions) -->
     <edmx:Diagrams>
-      <Diagram DiagramId="4c65e159bbab483ba1ce33fb5ec9eadc" Name="Diagram1" />
+      <Diagram DiagramId="4c65e159bbab483ba1ce33fb5ec9eadc" Name="Diagram1" >
+        <EntityTypeShape EntityType="TDKTModel.tblApp" Width="1.5" PointX="2.75" PointY="0.75" />
+        <EntityTypeShape EntityType="TDKTModel.tblRoleAction" Width="1.5" PointX="0.75" PointY="3.5" />
+        <AssociationConnector Association="TDKTModel.FK_tblRoleAction_tblApp" />
+        <EntityTypeShape EntityType="TDKTModel.tblAction" Width="1.5" PointX="0.75" PointY="0.75" />
+        <AssociationConnector Association="TDKTModel.FK_tblAction_tblApp" />
+        <AssociationConnector Association="TDKTModel.FK_tblRoleAction_tblAction" />
+      </Diagram>
     </edmx:Diagrams>
   </edmx:Designer>
 </edmx:Edmx>

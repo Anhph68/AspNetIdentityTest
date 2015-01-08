@@ -13,24 +13,13 @@ namespace AdminDatabase.Models
     {
         private TDKTEntities db = new TDKTEntities();
 
-        //public override void On(AuthorizationContext filterContext)
-        //{
-        //    var allowedRoles = db.sp_getAllowedRoles(filterContext.ActionDescriptor.ActionName, filterContext.ActionDescriptor.ControllerDescriptor.ControllerName, 1).ToList();
-
-        //    filterContext.Controller.ViewBag.AutherizationMessage = HttpContext.Current.User.Identity.Name;
-        //    Debug.Write(filterContext);
-        //    //filterContext.Controller.ViewBag.AutherizationMessage = "Custom Authorization: Message from OnAuthorization method.";
-        //}
-
         protected override bool AuthorizeCore(HttpContextBase httpContext)
         {
             var rd = httpContext.Request.RequestContext.RouteData;
             var allowedRoles = db.sp_getAllowedRoles(rd.GetRequiredString("action"), rd.GetRequiredString("controller"), 1).ToList();
             var currentRoles = db.sp_getRolesforUser(httpContext.User.Identity.GetUserId()).ToList();
 
-            return currentRoles.Any(c => allowedRoles.Contains(c));
-
-            //return base.AuthorizeCore(httpContext);
+            return currentRoles.Any(r => allowedRoles.Contains(r));
         }
 
         protected override void HandleUnauthorizedRequest(AuthorizationContext filterContext)
